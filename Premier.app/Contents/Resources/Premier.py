@@ -74,7 +74,7 @@ def run_script(username, password, ui):
             wb = Workbook()
 
             # create the 4 sheets
-            create_sheets(wb, fileName, SPG_IDs, LIDN_IDs)
+            create_sheets(wb, fileName)
 
             # save the file
             wb.save(excel_filename)
@@ -90,7 +90,7 @@ def run_script(username, password, ui):
     # open the excel file
     if os.name == "nt":
         os.system(excel_filename)
-    elif os.name == "mac":
+    elif os.name == "posix":
         os.system("open " + excel_filename)
 
 
@@ -126,7 +126,7 @@ def extract_zip():
         myFile.extractall()
 
 
-def create_sheets(wb, file_name, spg, lidn):
+def create_sheets(wb, file_name):
     # iterate over ID numbers, creating a new sheet for each
     ws = wb.active
     ws.title = "SPG OLM"
@@ -147,7 +147,7 @@ def create_sheets(wb, file_name, spg, lidn):
             row = line.split("\t")
 
             status = row[21]
-            if status != '"Active"' and first_row_appended:
+            if status != "Active" and first_row_appended:
                 continue
 
             row = row[:26]
@@ -155,7 +155,7 @@ def create_sheets(wb, file_name, spg, lidn):
 
             if first_row_appended:
                 # append row to correct sheet
-                append_rows(worksheets, row, spg, lidn)
+                append_rows(worksheets, row)
             elif row[0] == "GPO ID":
                 # append first row to all sheets
                 worksheets[0].append(row)
@@ -168,21 +168,22 @@ def create_sheets(wb, file_name, spg, lidn):
     style_columns(worksheets)
 
 
-def append_rows(worksheets, row, spg, lidn):
-    if len(spg) == 0:
+def append_rows(worksheets, row):
+    print("append")
+    if len(SPG_IDs) == 0:
         worksheets[0].append(row)
         worksheets[1].append(row)
 
-    if len(lidn) == 0:
+    if len(LIDN_IDs) == 0:
         worksheets[2].append(row)
         worksheets[3].append(row)
 
-    for spg_id in spg:
+    for spg_id in SPG_IDs:
         if spg_id in row and ("Owned" in row or "Leased" in row or "Managed" in row):
             worksheets[0].append(row)
         if spg_id in row and ("Affiliated" in row or "Employed" in row):
             worksheets[1].append(row)
-    for lidn_id in lidn:
+    for lidn_id in LIDN_IDs:
         if lidn_id in row and ("Owned" in row or "Leased" in row or "Managed" in row):
             worksheets[2].append(row)
         if lidn_id in row and ("Affiliated" in row or "Employed" in row):
