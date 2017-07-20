@@ -7,10 +7,13 @@ class UI(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Premier")
+        self.setWindowTitle("Member Roster")
         self.setGeometry(0, 0, 500, 500)
         self.move(QtWidgets.QApplication.desktop().screen().rect().center() - self.rect().center())
         self.setStyleSheet("background-color: #0074BB")
+
+        self.font = QtGui.QFont()
+        self.font.setFamily("Helvetica")
 
         self.vertical_layout = QtWidgets.QVBoxLayout()
 
@@ -23,22 +26,19 @@ class UI(QtWidgets.QWidget):
         self.vertical_layout.addLayout(self.logo_layout)
 
         self.username = TextField("Username")
+        self.username.setFont(self.font)
         self.vertical_layout.addLayout(self.username.layout)
 
         self.password = TextField("Password")
+        self.password.setFont(self.font)
         self.vertical_layout.addLayout(self.password.layout)
-
-        self.spg = TextField("SPG IDs")
-        self.vertical_layout.addLayout(self.spg.layout)
-
-        self.lidn = TextField("LIDN IDs")
-        self.vertical_layout.addLayout(self.lidn.layout)
 
         self.run_button = QtWidgets.QPushButton()
         self.run_button.setText("Run")
+        self.run_button.setFont(self.font)
         self.run_button.setFixedWidth(200)
         self.run_button.setFixedHeight(60)
-        self.run_button.setStyleSheet("background-color: #60C578; color: white;")
+        self.run_button.setStyleSheet("background-color: #64A70B; color: white;")
         self.run_button.clicked.connect(self.run)
         self.run_button_layout = QtWidgets.QHBoxLayout()
         self.run_button_layout.addStretch()
@@ -48,6 +48,7 @@ class UI(QtWidgets.QWidget):
 
         self.help_button = QtWidgets.QPushButton()
         self.help_button.setText("Help")
+        self.help_button.setFont(self.font)
         self.help_button.setFixedWidth(100)
         self.help_button.setFixedHeight(30)
         self.help_button.setStyleSheet("background-color: black; color: white;")
@@ -65,8 +66,6 @@ class UI(QtWidgets.QWidget):
         self.password.setStyleSheet("background-color: white")
         Premier.run_script(self.username.text(),
                            self.password.text(),
-                           self.spg.text().split(" "),
-                           self.lidn.text().split(" "),
                            self)
 
     def login_failed(self):
@@ -86,8 +85,8 @@ class UI(QtWidgets.QWidget):
         welcome_alert = QtWidgets.QMessageBox()
         welcome_alert.setIcon(QtWidgets.QMessageBox.Information)
         welcome_alert.setWindowTitle("Welcome")
-        welcome_alert.setText("Enter your Premier Connect login information and the desired SPG and LIDN Ids.")
-        welcome_alert.setInformativeText("Each ID number should be separated by a single space. Once you press run, it may take a few minutes depending on your network speed. The excel spreadsheet will open automatically, and then you can save it to your computer using File->Save As.")
+        welcome_alert.setText("Enter your Premier Connect login information and press run.")
+        welcome_alert.setInformativeText("It may take a few minutes depending on your network speed. The excel spreadsheet will open automatically, and then you can save it to any desired location using File->Save As.")
         welcome_alert.setStandardButtons(QtWidgets.QMessageBox.Ok)
         welcome_alert.exec_()
 

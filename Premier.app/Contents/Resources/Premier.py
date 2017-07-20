@@ -11,6 +11,21 @@ from PyQt5 import QtWidgets
 import UserInterface
 from datetime import date
 
+"""
+
+EDIT THE FOLLOWING LISTS OF SPG AND LIDN IDs
+
+"""
+
+SPG_IDs = ["CA2043", "FL0343", "FL2221", "MD0094", "658406", "CA2700", "MN2013", "PA2205", "IA2053", "MI2035", "649419", "MI2002", "OH2233", "TX0155", "KY5005", "WA0014", "IL2464", "MO0014", "TX2246", "635796", "CA0053", "616890", "CA053", "601045", "OH2004", "669907", "700273", "631225", "IL2185"]
+
+LIDN_IDs = ["CA2043", "658406", "MN2013", "MI2035", "649419", "TX0155", "KY5005", "IL5043", "635796", "CA0053", "616890", "CA053", "601045"]
+
+
+"""
+DO NOT EDIT THE REMAINDER OF THE FILE
+
+"""
 
 url = "https://legacy.premierinc.com/bp/hipaa?from=%2Fabout%2Fprivate%2Fsuppliers%2Fcontracted-suppliers%2Frosters%2Fdisplay.jsp&roster_type=hisci&cn=master_hin"
 
@@ -29,7 +44,7 @@ def main():
     sys.exit(app.exec_())
 
 
-def run_script(username, password, spg, lidn, ui):
+def run_script(username, password, ui):
     # open the premier website
     browser = RoboBrowser(parser="html.parser")
     browser.open(url)
@@ -59,7 +74,7 @@ def run_script(username, password, spg, lidn, ui):
             wb = Workbook()
 
             # create the 4 sheets
-            create_sheets(wb, fileName, spg, lidn)
+            create_sheets(wb, fileName, SPG_IDs, LIDN_IDs)
 
             # save the file
             wb.save(excel_filename)
@@ -73,7 +88,10 @@ def run_script(username, password, spg, lidn, ui):
             os.remove(fileName)
 
     # open the excel file
-    os.system("open " + excel_filename)
+    if os.name == "nt":
+        os.system(excel_filename)
+    elif os.name == "mac":
+        os.system("open " + excel_filename)
 
 
 def find_link(browser, ui):
@@ -119,40 +137,35 @@ def create_sheets(wb, file_name, spg, lidn):
     with codecs.open(file_name, "r", encoding="utf-8", errors="ignore") as f:
         # iterate through .txt file
         for line in f:
+            # remove quote characters
+            line = line.replace('"', "")
+
+            # remove new line character
+            line = line.replace('\n', "")
+
             # split by tabs
             row = line.split("\t")
 
-            # remove new line character
-            if '\n' in row:
-                row.remove('\n')
-
             status = row[21]
-            if status != '"Active"' and '"GPO ID"' not in row:
+            if status != '"Active"' and first_row_appended:
                 continue
 
-            row = row[:27]
+            row = row[:26]
             remove_columns([1, 2, 13, 14, 15, 17, 18, 21, 22, 23, 24], row)
-
-            # remove quote characters
-            remove_quotes(row)
 
             if first_row_appended:
                 # append row to correct sheet
                 append_rows(worksheets, row, spg, lidn)
-            elif "GPO ID" in row:
+            elif row[0] == "GPO ID":
+                # append first row to all sheets
                 worksheets[0].append(row)
                 worksheets[1].append(row)
                 worksheets[2].append(row)
                 worksheets[3].append(row)
                 first_row_appended = True
 
+    # style the columns
     style_columns(worksheets)
-
-
-def remove_quotes(row):
-    for j, item in enumerate(row):
-        if len(item) > 0 and (item[0] == item[-1]) and item.startswith('"'):
-            row[j] = item[1:-1]
 
 
 def append_rows(worksheets, row, spg, lidn):
@@ -185,7 +198,7 @@ def remove_columns(numbers, row):
 
 def style_columns(worksheets):
     label_font = Font(bold=True)
-    label_fill = PatternFill(fill_type="solid", fgColor="339900")
+    label_fill = PatternFill(fill_type="solid", fgColor="64A70B")
     label_alignment = Alignment(horizontal="center", vertical="center")
 
     for ws in worksheets:
@@ -203,7 +216,7 @@ def style_columns(worksheets):
         ws.column_dimensions["O"].width = 25
         ws.column_dimensions["P"].width = 24
         ws.column_dimensions["Q"].width = 12
-        ws.row_dimensions[0].height = 25
+        ws.row_dimensions[1].height = 25
 
         for col in ws.iter_cols(min_row=0, max_row=0):
             col[0].font = label_font
