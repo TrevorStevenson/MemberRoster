@@ -5,17 +5,17 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>Premier</string>
+	<string>MemberRoster</string>
 	<key>CFBundleExecutable</key>
-	<string>Premier</string>
+	<string>MemberRoster</string>
 	<key>CFBundleIconFile</key>
 	<string>PythonApplet.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.pythonmac.unspecified.Premier</string>
+	<string>org.pythonmac.unspecified.MemberRoster</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Premier</string>
+	<string>MemberRoster</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

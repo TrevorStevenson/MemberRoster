@@ -93,6 +93,6 @@ def _setup_ctypes():
 _setup_ctypes()
 
 
-DEFAULT_SCRIPT='Premier.py'
+DEFAULT_SCRIPT='MemberRoster.py'
 SCRIPT_MAP={}
 _run()

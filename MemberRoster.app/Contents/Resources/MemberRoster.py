@@ -10,6 +10,7 @@ import sys
 from PyQt5 import QtWidgets
 import UserInterface
 from datetime import date
+import time
 
 """
 
@@ -32,6 +33,7 @@ url = "https://legacy.premierinc.com/bp/hipaa?from=%2Fabout%2Fprivate%2Fsupplier
 
 def main():
     app = QtWidgets.QApplication([])
+    QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create("Windows"))
     window = UserInterface.UI()
     window.show()
 
@@ -45,12 +47,14 @@ def main():
 
 
 def run_script(username, password, ui):
-    # open the premier website
+    # open the Premier Connect applet
     browser = RoboBrowser(parser="html.parser")
     browser.open(url)
 
     # login to the page
     login(browser, "login-form", username, password)
+    ui.progress_bar.setValue(30)
+    ui.info_label.setText("Downloading file...")
 
     # follow the link to the latest files
     link = find_link(browser, ui)
@@ -61,8 +65,12 @@ def run_script(username, password, ui):
 
     # download and extract the zip file
     download_zip(browser.response)
+    ui.progress_bar.setValue(75)
+    ui.info_label.setText("Extracting zip...")
 
     extract_zip()
+    ui.progress_bar.setValue(80)
+    ui.info_label.setText("Creating Excel sheets...")
 
     today = date.today()
     excel_filename = "MemberRoster_" + str(today.month) + "_" + str(today.day) + ".xlsx"
@@ -74,7 +82,9 @@ def run_script(username, password, ui):
             wb = Workbook()
 
             # create the 4 sheets
-            create_sheets(wb, fileName)
+            create_sheets(wb, fileName, ui)
+            ui.progress_bar.setValue(90)
+            ui.info_label.setText("Styling sheets...")
 
             # save the file
             wb.save(excel_filename)
@@ -86,6 +96,9 @@ def run_script(username, password, ui):
         elif fileName.endswith(".txt"):
             # delete unused files
             os.remove(fileName)
+
+    ui.progress_bar.setValue(100)
+    ui.info_label.setText("Done")
 
     # open the excel file
     if os.name == "nt":
@@ -126,7 +139,7 @@ def extract_zip():
         myFile.extractall()
 
 
-def create_sheets(wb, file_name):
+def create_sheets(wb, file_name, ui):
     # iterate over ID numbers, creating a new sheet for each
     ws = wb.active
     ws.title = "SPG OLM"
@@ -146,10 +159,12 @@ def create_sheets(wb, file_name):
             # split by tabs
             row = line.split("\t")
 
+            # choose only active rows
             status = row[21]
             if status != "Active" and first_row_appended:
                 continue
 
+            # remove unnecessary columns
             row = row[:26]
             remove_columns([1, 2, 13, 14, 15, 17, 18, 21, 22, 23, 24], row)
 
@@ -157,6 +172,7 @@ def create_sheets(wb, file_name):
                 # append row to correct sheet
                 append_rows(worksheets, row)
             elif row[0] == "GPO ID":
+                row.insert(-2, "Top Parent Affiliate")
                 # append first row to all sheets
                 worksheets[0].append(row)
                 worksheets[1].append(row)
@@ -169,24 +185,29 @@ def create_sheets(wb, file_name):
 
 
 def append_rows(worksheets, row):
-    print("append")
-    if len(SPG_IDs) == 0:
-        worksheets[0].append(row)
-        worksheets[1].append(row)
+    TP_ID = row[12]
+    RELATIONSHIP = row[11]
 
-    if len(LIDN_IDs) == 0:
-        worksheets[2].append(row)
-        worksheets[3].append(row)
+    # add top parent name to affiliates
+    if TP_ID in ["635796", "CA0053", "616890", "CA053", "601045"]:
+        row.insert(-2, "Adventist Health Aff")
+    elif TP_ID in ["OH2004", "669907"]:
+        row.insert(-2, "Mercy Health Aff")
+    elif TP_ID == "700273":
+        row.insert(-2, "Peace Health Aff")
+    elif TP_ID in ["631225", "IL2185"]:
+        row.insert(-2, "Presence Health Network Aff")
 
+    # append row to correct sheet
     for spg_id in SPG_IDs:
-        if spg_id in row and ("Owned" in row or "Leased" in row or "Managed" in row):
+        if spg_id == TP_ID and ("Owned" == RELATIONSHIP or "Leased" == RELATIONSHIP or "Managed" == RELATIONSHIP):
             worksheets[0].append(row)
-        if spg_id in row and ("Affiliated" in row or "Employed" in row):
+        if spg_id == TP_ID and ("Affiliated" == RELATIONSHIP or "Employed" == RELATIONSHIP):
             worksheets[1].append(row)
     for lidn_id in LIDN_IDs:
-        if lidn_id in row and ("Owned" in row or "Leased" in row or "Managed" in row):
+        if lidn_id == TP_ID and ("Owned" == RELATIONSHIP or "Leased" == RELATIONSHIP or "Managed" == RELATIONSHIP):
             worksheets[2].append(row)
-        if lidn_id in row and ("Affiliated" in row or "Employed" in row):
+        if lidn_id == TP_ID and ("Affiliated" == RELATIONSHIP or "Employed" == RELATIONSHIP):
             worksheets[3].append(row)
 
 
@@ -215,8 +236,7 @@ def style_columns(worksheets):
         ws.column_dimensions["M"].width = 16
         ws.column_dimensions["N"].width = 32
         ws.column_dimensions["O"].width = 25
-        ws.column_dimensions["P"].width = 24
-        ws.column_dimensions["Q"].width = 12
+        ws.column_dimensions["P"].width = 25
         ws.row_dimensions[1].height = 25
 
         for col in ws.iter_cols(min_row=0, max_row=0):
