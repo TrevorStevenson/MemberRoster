@@ -122,7 +122,7 @@ class UI(QtWidgets.QWidget):
         welcome_alert.setFont(self.font)
         welcome_alert.setWindowTitle("Welcome")
         welcome_alert.setText("Enter your Premier Connect login information and press run.")
-        welcome_alert.setInformativeText("It may take a few minutes depending on your network speed. The excel spreadsheet will open automatically, and then you can save it to any desired location using File->Save As.")
+        welcome_alert.setInformativeText("It may take a few minutes depending on your network speed. The Excel spreadsheet will open automatically, and then you can save it to any desired location using File->Save As.")
         welcome_alert.setStandardButtons(QtWidgets.QMessageBox.Ok)
         welcome_alert.exec_()
 

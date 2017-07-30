@@ -33,7 +33,7 @@ url = "https://legacy.premierinc.com/bp/hipaa?from=%2Fabout%2Fprivate%2Fsupplier
 
 def main():
     app = QtWidgets.QApplication([])
-    QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create("Windows"))
+    QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create("windows"))
     window = UserInterface.UI()
     window.show()
 
@@ -197,6 +197,8 @@ def append_rows(worksheets, row):
         row.insert(-2, "Peace Health Aff")
     elif TP_ID in ["631225", "IL2185"]:
         row.insert(-2, "Presence Health Network Aff")
+    else:
+        row.insert(-2, "")
 
     # append row to correct sheet
     for spg_id in SPG_IDs:
